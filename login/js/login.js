@@ -1,47 +1,36 @@
-// login.js
-// Menggunakan REST API dari LKPD: https://herisusanta.my.id/javalogin/api/
-
-document.addEventListener('DOMContentLoaded', function () {
-  const form = document.getElementById('loginForm');
-  if (!form) return;
-
-  form.addEventListener('submit', function (e) {
+document.getElementById("loginForm").addEventListener("submit", async function(e) {
     e.preventDefault();
 
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value.trim();
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
 
-    if (!username || !password) {
-      alert('Username dan password harus diisi!');
-      return;
-    }
+    const res = await fetch("https://herisusanta.my.id/javalogin/api/auth.php", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: `action=login&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
+    });
 
-    fetch('https://herisusanta.my.id/javalogin/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.status === 'success' || data.token) {
-          // Simpan data user ke localStorage
-          localStorage.setItem('token', data.token || 'loggedin');
-          localStorage.setItem('user', JSON.stringify({ username, role: data.role || 'user' }));
-          alert('Login berhasil! Selamat datang, ' + username);
+    const data = await res.json();
 
-          // Arahkan ke halaman admin jika admin, ke landing page jika user biasa
-          if (username === 'admin') {
-            window.location.href = '../admin/index.html';
-          } else {
-            window.location.href = '../index.html';
-          }
-        } else {
-          alert('Login gagal! Username atau password salah.');
-        }
-      })
-      .catch(err => {
-        console.error(err);
-        alert('Terjadi kesalahan. Periksa koneksi internet kamu.');
-      });
-  });
+    if (data.status === "success") {
+        // simpan username
+            localStorage.setItem("username", data.username);
+            window.location.href = "../index.html";
+         
+    // } else {
+    //     document.getElementById("message").innerText = "Username / Password salah";alert("Login gagal");
+    // }
+    
+    } else {
+    const alertBox = document.getElementById("alertBox");
+    alertBox.innerText = "Username atau Password salah, silahkan coba lagi";
+    alertBox.style.display = "block";
+
+    setTimeout(() => {
+        alertBox.style.display = "none";
+    }, 3000);
+} 
+   
 });
